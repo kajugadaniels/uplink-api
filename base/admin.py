@@ -9,8 +9,8 @@ class CategoryAdmin(admin.ModelAdmin):
     Features:
     - Displays 'name' and 'slug' fields in the list view.
     - Enables searching by category name.
-    - Automatically prepopulates the slug field based on the name.
+    - The 'slug' field is read-only as it is automatically generated from the name.
     """
     list_display = ('name', 'slug')
     search_fields = ('name',)
-    prepopulated_fields = {"slug": ("name",)}
+    readonly_fields = ('slug',)
