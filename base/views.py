@@ -136,3 +136,28 @@ class UpdateCategory(APIView):
             "detail": "Failed to update category.",
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+class DeleteCategory(APIView):
+    """
+    Delete a category by slug.
+    Accessible only to authenticated users.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, slug, *args, **kwargs):
+        try:
+            category = Category.objects.get(slug=slug)
+        except Category.DoesNotExist:
+            return Response({
+                "detail": "Category not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+        try:
+            category.delete()
+            return Response({
+                "detail": "Category deleted successfully."
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "detail": "An error occurred while deleting the category.",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
