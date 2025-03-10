@@ -77,3 +77,62 @@ class CategoryDetails(APIView):
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class UpdateCategory(APIView):
+    """
+    Update an existing category.
+    Supports both PUT (complete update) and PATCH (partial update).
+    Accessible only to authenticated users.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, slug, *args, **kwargs):
+        try:
+            category = Category.objects.get(slug=slug)
+        except Category.DoesNotExist:
+            return Response({
+                "detail": "Category not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = CategorySerializer(category, data=request.data, partial=False)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+                return Response({
+                    "detail": "Category updated successfully.",
+                    "data": serializer.data
+                }, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({
+                    "detail": "An error occurred while updating the category.",
+                    "error": str(e)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            "detail": "Failed to update category.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, slug, *args, **kwargs):
+        try:
+            category = Category.objects.get(slug=slug)
+        except Category.DoesNotExist:
+            return Response({
+                "detail": "Category not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = CategorySerializer(category, data=request.data, partial=True)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+                return Response({
+                    "detail": "Category updated successfully.",
+                    "data": serializer.data
+                }, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({
+                    "detail": "An error occurred while updating the category.",
+                    "error": str(e)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            "detail": "Failed to update category.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
