@@ -1,5 +1,5 @@
 import os
-from auth.managers import *
+from account.managers import *
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
@@ -40,12 +40,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Custom related names to prevent clashes with auth models
     groups = models.ManyToManyField(
         'auth.Group', 
-        related_name='auth_user_set',
+        related_name='account_user_set',
         blank=True
     )
     user_permissions = models.ManyToManyField(
         Permission, 
-        related_name='auth_user_permissions',
+        related_name='account_user_permissions',
         blank=True
     )
 
