@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
 
     # Custom apps
-    'auth',
 ]
 
 MIDDLEWARE = [
@@ -141,8 +140,6 @@ WHITENOISE_AUTOREFRESH = True
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-AUTH_USER_MODEL = 'auth.User'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
