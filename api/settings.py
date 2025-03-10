@@ -81,7 +81,23 @@ WSGI_APPLICATION = 'api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES =  {
+if str(os.getenv("NODE_ENV"))=="production":
+
+    DATABASES =  {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv("POSTGRES_DB"),      
+            'USER': os.getenv("POSTGRES_USER"),       
+            'PASSWORD': os.getenv("POSTGRES_PASSWORD"), 
+            'HOST': os.getenv("PGHOST"),         
+            'PORT':os.getenv("PGPORT"), 
+            'OPTIONS': {
+                'sslmode': 'require',
+            }            
+        }
+    }
+else:
+    DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv("MYSQL_DB"),
