@@ -11,10 +11,12 @@ from rest_framework_simplejwt.exceptions import TokenError
 
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
-        """Handle login and return JWT tokens with detailed validation messages."""
+        """
+        Handle login using an identifier (email, phone number, or username) and password.
+        Returns JWT tokens upon successful authentication.
+        """
         serializer = LoginSerializer(data=request.data)
 
-        # If serializer is valid, send back the JWT tokens
         if serializer.is_valid():
             return Response(
                 {
@@ -24,7 +26,6 @@ class LoginView(APIView):
                 status=status.HTTP_200_OK
             )
 
-        # If validation fails, return detailed error messages
         return Response(
             {"detail": "Validation error", "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST
