@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 
 class Category(models.Model):
     """
@@ -25,3 +26,6 @@ class Category(models.Model):
         Returns a string representation of the category.
         """
         return self.name
+
+    class Meta:
+        verbose_name_plural = _('Categories')
