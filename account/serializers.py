@@ -1,34 +1,34 @@
 from account.models import *
+from django.db.models import Q
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    identifier = serializers.CharField(
+        help_text="Enter your email, phone number, or username."
+    )
     password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
-        """Override the validate method to authenticate user."""
-        email = attrs.get('email')
+        identifier = attrs.get('identifier')
         password = attrs.get('password')
 
-        # Check if the email is provided
-        if not email:
-            raise ValidationError("Email is required.")
-
-        # Check if the password is provided
+        if not identifier:
+            raise ValidationError("Identifier (email, phone number, or username) is required.")
         if not password:
             raise ValidationError("Password is required.")
 
-        # Attempt to fetch the user from the database
         User = get_user_model()
         try:
-            user = User.objects.get(email=email)
+            # Query user using email (case-insensitive), phone number, or username (case-insensitive)
+            user = User.objects.get(
+                Q(email__iexact=identifier) | Q(phone_number=identifier) | Q(username__iexact=identifier)
+            )
         except User.DoesNotExist:
-            raise ValidationError("No user found with this email address.")
+            raise ValidationError("No user found with the provided email, phone number, or username.")
 
-        # Check if the password is correct
         if not user.check_password(password):
             raise ValidationError("Incorrect password. Please check your credentials.")
 
