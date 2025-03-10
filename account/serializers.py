@@ -1,3 +1,4 @@
+from account.models import *
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -37,3 +38,50 @@ class LoginSerializer(serializers.Serializer):
         attrs['access'] = str(refresh.access_token)
 
         return attrs
+
+class RegisterUserSerializer(serializers.ModelSerializer):
+    confirm_password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'name', 
+            'email', 
+            'username', 
+            'phone_number', 
+            'image', 
+            'password', 
+            'confirm_password'
+        ]
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'username': {'required': False},
+        }
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("A user with this email already exists. Please use a different email address.")
+        return value
+
+    def validate_phone_number(self, value):
+        if User.objects.filter(phone_number=value).exists():
+            raise serializers.ValidationError("A user with this phone number already exists. Please use a different phone number.")
+        return value
+
+    def validate(self, attrs):
+        if attrs.get('password') != attrs.get('confirm_password'):
+            raise serializers.ValidationError({"password": "Password and confirm password do not match. Please re-enter them."})
+        return attrs
+
+    def create(self, validated_data):
+        validated_data.pop('confirm_password')
+        # Using the custom manager to create the user ensures the password is hashed properly.
+        user = User.objects.create_user(
+            email=validated_data.get('email'),
+            name=validated_data.get('name'),
+            username=validated_data.get('username'),
+            phone_number=validated_data.get('phone_number'),
+            image=validated_data.get('image'),
+            password=validated_data.get('password')
+        )
+        return user
