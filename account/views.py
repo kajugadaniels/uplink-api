@@ -57,19 +57,22 @@ class LogoutView(APIView):
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
+        """
+        Handle user registration. If the username is not provided,
+        generate a unique username from the user's name. Upon successful registration,
+        send a welcome email to the user's registered email address.
+        """
         serializer = RegisterUserSerializer(data=request.data)
         if serializer.is_valid():
             data = serializer.validated_data.copy()
-            # If username is not provided, generate one using the user's name.
+            # Generate unique username if not provided
             if not data.get('username'):
                 base_username = slugify(data.get('name')) if data.get('name') else "user"
                 username = base_username
-                # Append 4 random digits until a unique username is found.
                 while User.objects.filter(username=username).exists():
                     username = f"{base_username}-{random.randint(1000, 9999)}"
                 data['username'] = username
             else:
-                # If a username is provided, verify uniqueness and append 4 random digits if needed.
                 base_username = data['username']
                 username = base_username
                 while User.objects.filter(username=username).exists():
@@ -78,6 +81,14 @@ class RegisterView(APIView):
 
             # Create the user with the updated, unique username.
             user = serializer.create(data)
+
+            # Send welcome email upon successful registration.
+            subject = "Welcome to UpLink!"
+            message = f"Hi {user.name or 'there'}, welcome to UpLink. We're thrilled to have you on board."
+            from_email = None  # Uses DEFAULT_FROM_EMAIL from settings if set.
+            recipient_list = [user.email]
+            send_mail(subject, message, from_email, recipient_list)
+
             return Response({
                 "detail": "User registered successfully.",
                 "user": {
