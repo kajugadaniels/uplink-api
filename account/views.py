@@ -1,5 +1,8 @@
+import random
+from account.models import *
 from account.serializers import *
 from rest_framework import status
+from django.utils.text import slugify
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -52,7 +55,25 @@ class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = RegisterUserSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
+            data = serializer.validated_data.copy()
+            # If username is not provided, generate one using the user's name.
+            if not data.get('username'):
+                base_username = slugify(data.get('name')) if data.get('name') else "user"
+                username = base_username
+                # Append 4 random digits until a unique username is found.
+                while User.objects.filter(username=username).exists():
+                    username = f"{base_username}-{random.randint(1000, 9999)}"
+                data['username'] = username
+            else:
+                # If a username is provided, verify uniqueness and append 4 random digits if needed.
+                base_username = data['username']
+                username = base_username
+                while User.objects.filter(username=username).exists():
+                    username = f"{base_username}{random.randint(1000, 9999)}"
+                data['username'] = username
+
+            # Create the user with the updated, unique username.
+            user = serializer.create(data)
             return Response({
                 "detail": "User registered successfully.",
                 "user": {

@@ -1,4 +1,3 @@
-import random
 from account.models import *
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
@@ -61,39 +60,22 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError(
-                "A user with this email already exists. Please use a different email address."
-            )
+            raise serializers.ValidationError("A user with this email already exists. Please use a different email address.")
         return value
 
     def validate_phone_number(self, value):
         if User.objects.filter(phone_number=value).exists():
-            raise serializers.ValidationError(
-                "A user with this phone number already exists. Please use a different phone number."
-            )
+            raise serializers.ValidationError("A user with this phone number already exists. Please use a different phone number.")
         return value
 
     def validate(self, attrs):
         if attrs.get('password') != attrs.get('confirm_password'):
-            raise serializers.ValidationError(
-                {"password": "Password and confirm password do not match. Please re-enter them."}
-            )
+            raise serializers.ValidationError({"password": "Password and confirm password do not match. Please re-enter them."})
         return attrs
 
     def create(self, validated_data):
-        # Remove confirm_password as it is not needed for user creation.
         validated_data.pop('confirm_password')
-        username = validated_data.get('username')
-        
-        # If a username is provided, ensure it's unique by appending 4 random digits if necessary.
-        if username:
-            base_username = username
-            # Loop until a unique username is found.
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{random.randint(1000, 9999)}"
-            validated_data['username'] = username
-
-        # Use the custom user manager to handle user creation (including password hashing).
+        # Using the custom manager to create the user ensures the password is hashed properly.
         user = User.objects.create_user(
             email=validated_data.get('email'),
             name=validated_data.get('name'),
