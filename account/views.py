@@ -6,27 +6,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 
-class RegisterView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = RegisterUserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response({
-                "detail": "User registered successfully.",
-                "user": {
-                    "id": user.id,
-                    "name": user.name,
-                    "email": user.email,
-                    "username": user.username,
-                    "phone_number": user.phone_number,
-                }
-            }, status=status.HTTP_201_CREATED)
-
-        return Response({
-            "detail": "Registration failed. Please check the errors for details.",
-            "errors": serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
-
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
         """Handle login and return JWT tokens with detailed validation messages."""
@@ -68,3 +47,24 @@ class LogoutView(APIView):
         except TokenError:
             # If the token is invalid or already blacklisted
             return Response({"detail": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+
+class RegisterView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = RegisterUserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                "detail": "User registered successfully.",
+                "user": {
+                    "id": user.id,
+                    "name": user.name,
+                    "email": user.email,
+                    "username": user.username,
+                    "phone_number": user.phone_number,
+                }
+            }, status=status.HTTP_201_CREATED)
+
+        return Response({
+            "detail": "Registration failed. Please check the errors for details.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
