@@ -25,3 +25,30 @@ class GetCategories(APIView):
                 "detail": "An error occurred while retrieving categories.",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class AddCategory(APIView):
+    """
+    Create a new category.
+    Accessible only to authenticated users.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                category = serializer.save()
+                return Response({
+                    "detail": "Category created successfully.",
+                    "data": CategorySerializer(category).data
+                }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({
+                    "detail": "An error occurred while creating the category.",
+                    "error": str(e)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            "detail": "Category creation failed.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
