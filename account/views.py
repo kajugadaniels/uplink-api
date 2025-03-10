@@ -1,10 +1,13 @@
 import random
 from account.models import *
 from account.serializers import *
+from django.utils import timezone
 from rest_framework import status
 from django.utils.text import slugify
+from django.core.mail import send_mail
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
@@ -90,3 +93,28 @@ class RegisterView(APIView):
             "detail": "Registration failed. Please check the errors for details.",
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+class PasswordResetRequestView(APIView):
+    """
+    Initiate the password reset process by sending a 5-digit OTP to the user's email address.
+    """
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            User = get_user_model()
+            user = User.objects.get(email=email)
+            # Generate a 5-digit OTP
+            otp = str(random.randint(10000, 99999))
+            user.reset_otp = otp
+            user.otp_created_at = timezone.now()
+            user.save()
+
+            subject = "Password Reset OTP"
+            message = f"Your OTP for password reset is: {otp}"
+            from_email = None  # Uses DEFAULT_FROM_EMAIL from settings if set
+            recipient_list = [user.email]
+            send_mail(subject, message, from_email, recipient_list)
+
+            return Response({"detail": "OTP sent to your email address."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
