@@ -144,6 +144,9 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     )
 
     def validate(self, attrs):
+        """
+        Validates OTP, new password match, and ensures the new password meets complexity requirements.
+        """
         email = attrs.get('email')
         otp = attrs.get('otp')
         new_password = attrs.get('new_password')
@@ -151,6 +154,9 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
         if new_password != confirm_new_password:
             raise serializers.ValidationError("New password and confirm password do not match.")
+
+        # Validate new password complexity
+        validatePasswordComplexity(new_password)
 
         User = get_user_model()
         try:
@@ -161,16 +167,12 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         if user.reset_otp != otp:
             raise serializers.ValidationError("Invalid OTP provided.")
 
-        # Verify OTP expiration (set to 10 minutes)
-        from datetime import timedelta
-        from django.utils import timezone
         if user.otp_created_at:
             if timezone.now() - user.otp_created_at > timedelta(minutes=10):
                 raise serializers.ValidationError("OTP has expired. Please request a new one.")
         else:
             raise serializers.ValidationError("OTP was not generated. Please request a new one.")
 
-        # Pass the user instance for further processing
         attrs['user'] = user
         return attrs
 
