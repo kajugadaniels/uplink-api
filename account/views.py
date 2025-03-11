@@ -147,3 +147,37 @@ class PasswordResetConfirmView(APIView):
             send_mail(subject, message, from_email, recipient_list)
             return Response({"detail": "Password reset successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ProfileUpdateView(APIView):
+    """
+    Update the authenticated user's profile details.
+    Supports both complete (PUT) and partial (PATCH) updates.
+    Only accessible to authenticated users.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, *args, **kwargs):
+        serializer = UserProfileUpdateSerializer(instance=request.user, data=request.data, partial=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "detail": "Profile updated successfully.",
+                "user": serializer.data
+            }, status=status.HTTP_200_OK)
+        return Response({
+            "detail": "Profile update failed.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, *args, **kwargs):
+        serializer = UserProfileUpdateSerializer(instance=request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "detail": "Profile updated successfully.",
+                "user": serializer.data
+            }, status=status.HTTP_200_OK)
+        return Response({
+            "detail": "Profile update failed.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
