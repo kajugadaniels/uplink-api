@@ -14,3 +14,14 @@ class Post(models.Model):
         Returns a string representation of the Post.
         """
         return self.title
+
+class PostImage(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images', help_text="The post to which this image is associated.")
+    image = models.ImageField(upload_to='posts/', help_text="Upload an image for the post.")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="The date and time when the image was uploaded.")
+
+    def __str__(self):
+        """
+        Returns a string representation of the PostImage.
+        """
+        return f"Image for {self.post.title}"
