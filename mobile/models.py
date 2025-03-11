@@ -2,6 +2,7 @@ import os
 import random
 from base.models import *
 from django.db import models
+from django.conf import settings
 from django.utils.text import slugify
 from imagekit.processors import ResizeToFill
 from imagekit.models import ProcessedImageField
@@ -16,6 +17,7 @@ def post_image_path(instance, filename):
     return f'posts/post_{slugify(instance.post.title)}_{random_number}{file_extension}'
 
 class Post(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'is_staff': False}, help_text="Select the non-staff user who created this post.", null=True, blank=True)
     title = models.CharField(max_length=255, help_text="Enter the title of the post.")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='posts', help_text="Select the category for the post.")
     description = models.TextField(help_text="Enter the content or description of the post.")
