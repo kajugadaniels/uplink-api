@@ -25,3 +25,28 @@ class GetCategories(APIView):
                 "detail": "An error occurred while retrieving categories.",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CategoryDetails(APIView):
+    """
+    Retrieve details of a specific category by slug.
+    Accessible only to authenticated users.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, slug, *args, **kwargs):
+        try:
+            category = Category.objects.get(slug=slug)
+            serializer = CategorySerializer(category)
+            return Response({
+                "detail": "Category details retrieved successfully.",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        except Category.DoesNotExist:
+            return Response({
+                "detail": "Category not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({
+                "detail": "An error occurred while retrieving the category details.",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
