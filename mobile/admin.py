@@ -26,3 +26,17 @@ class PostAdmin(admin.ModelAdmin):
     search_fields = ('title', 'description')
     list_filter = ('category', 'created_at')
     inlines = [PostImageInline]
+
+@admin.register(PostImage)
+class PostImageAdmin(admin.ModelAdmin):
+    """
+    Admin interface for the PostImage model.
+    
+    Features:
+    - Displays the associated post and the image creation timestamp.
+    - Enables searching by the post title.
+    - Provides filtering by creation date.
+    """
+    list_display = ('post', 'created_at')
+    search_fields = ('post__title',)
+    list_filter = ('created_at',)
