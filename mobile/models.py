@@ -58,3 +58,12 @@ class PostImage(models.Model):
         except PostImage.DoesNotExist:
             pass
         super(PostImage, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """
+        Override delete to ensure that when a PostImage is deleted, the associated image file is removed from the media folder.
+        """
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super(PostImage, self).delete(*args, **kwargs)
