@@ -25,7 +25,7 @@ class PostAdmin(admin.ModelAdmin):
     - Integrates PostImageInline to allow adding/editing post images directly from the post view.
     - Provides explicit Edit and Delete links via a custom 'action_links' column.
     """
-    list_display = ('title', 'user', 'category', 'created_at', 'updated_at', 'action_links')
+    list_display = ('title', 'user', 'category', 'action_links')
     search_fields = ('title', 'description', 'user__username')
     list_filter = ('user', 'category', 'created_at')
     inlines = [PostImageInline]
