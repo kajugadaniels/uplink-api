@@ -39,16 +39,16 @@ class PostAdmin(admin.ModelAdmin):
         return format_html('<a href="{}">Edit</a> | <a href="{}">Delete</a>', change_url, delete_url)
     action_links.short_description = 'Actions'
 
-@admin.register(PostImage)
-class PostImageAdmin(admin.ModelAdmin):
-    """
-    Admin interface for the PostImage model.
+# @admin.register(PostImage)
+# class PostImageAdmin(admin.ModelAdmin):
+#     """
+#     Admin interface for the PostImage model.
     
-    Features:
-    - Displays the associated post and the image creation timestamp.
-    - Enables searching by the post title.
-    - Provides filtering by creation date.
-    """
-    list_display = ('post', 'created_at')
-    search_fields = ('post__title',)
-    list_filter = ('created_at',)
+#     Features:
+#     - Displays the associated post and the image creation timestamp.
+#     - Enables searching by the post title.
+#     - Provides filtering by creation date.
+#     """
+#     list_display = ('post', 'created_at')
+#     search_fields = ('post__title',)
+#     list_filter = ('created_at',)
