@@ -31,14 +31,14 @@ class GetCategories(APIView):
 
 class CategoryDetails(APIView):
     """
-    Retrieve details of a specific category by slug.
+    Retrieve details of a specific category by pk.
     Accessible only to authenticated users.
     """
     permission_classes = [AllowAny]
 
-    def get(self, request, slug, *args, **kwargs):
+    def get(self, request, pk, *args, **kwargs):
         try:
-            category = Category.objects.get(slug=slug)
+            category = Category.objects.get(pk=pk)
             serializer = CategorySerializer(category)
             return Response({
                 "detail": "Category details retrieved successfully.",

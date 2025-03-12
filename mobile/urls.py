@@ -7,7 +7,7 @@ app_name = 'mobile'
 
 urlpatterns = [
     path('categories/', GetCategories.as_view(), name='GetCategories'),
-    path('category/<slug:slug>/', CategoryDetails.as_view(), name='CategoryDetails'),
+    path('category/<int:pk>/', CategoryDetails.as_view(), name='CategoryDetails'),
 
     path('posts/', GetPosts.as_view(), name='GetPosts'),
     path('post/add/', AddPost.as_view(), name='AddPost'),
