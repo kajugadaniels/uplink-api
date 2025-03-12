@@ -85,14 +85,13 @@ class AddPost(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data.copy()
-        data['user'] = request.user.id  # Ensure the post's user is the logged-in user.
-        serializer = PostSerializer(data=data)
+        serializer = PostSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             try:
                 post = serializer.save()
                 return Response({
                     "detail": "Post created successfully.",
-                    "data": PostSerializer(post).data
+                    "data": PostSerializer(post, context={'request': request}).data
                 }, status=status.HTTP_201_CREATED)
             except Exception as e:
                 return Response({
