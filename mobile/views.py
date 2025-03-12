@@ -295,3 +295,57 @@ class AddPostComment(APIView):
             "detail": "Comment creation failed.",
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+class UpdatePostComment(APIView):
+    """
+    Update an existing comment.
+    Only the comment's owner (logged-in user) can update it.
+    Supports both PUT and PATCH methods.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, pk, *args, **kwargs):
+        comment = get_object_or_404(PostComment, pk=pk)
+        if comment.user != request.user:
+            return Response({"detail": "Permission denied: You are not the owner of this comment."},
+                            status=status.HTTP_403_FORBIDDEN)
+        serializer = PostCommentSerializer(comment, data=request.data, partial=False, context={'request': request})
+        if serializer.is_valid():
+            try:
+                updated_comment = serializer.save()
+                return Response({
+                    "detail": "Comment updated successfully.",
+                    "data": PostCommentSerializer(updated_comment, context={'request': request}).data
+                }, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({
+                    "detail": "An error occurred while updating the comment.",
+                    "error": str(e)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            "detail": "Comment update failed.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk, *args, **kwargs):
+        comment = get_object_or_404(PostComment, pk=pk)
+        if comment.user != request.user:
+            return Response({"detail": "Permission denied: You are not the owner of this comment."},
+                            status=status.HTTP_403_FORBIDDEN)
+        serializer = PostCommentSerializer(comment, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            try:
+                updated_comment = serializer.save()
+                return Response({
+                    "detail": "Comment updated successfully.",
+                    "data": PostCommentSerializer(updated_comment, context={'request': request}).data
+                }, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({
+                    "detail": "An error occurred while updating the comment.",
+                    "error": str(e)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            "detail": "Comment update failed.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
