@@ -24,23 +24,26 @@ class PostImageSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     """
-    Serializer for the Post model.
-    
-    This serializer includes a nested representation of associated post images,
-    allowing the creation and update of a post along with multiple images.
+    Serializer for the Post model including nested user and images.
+    The user field is represented using the detailed UserSerializer.
     """
+    user = UserSerializer(read_only=True)
     images = PostImageSerializer(many=True, required=False)
 
     class Meta:
         model = Post
         fields = ('id', 'user', 'title', 'category', 'description', 'created_at', 'updated_at', 'images')
         read_only_fields = ('id', 'created_at', 'updated_at')
-    
+
     def create(self, validated_data):
         """
-        Create a new Post instance along with any associated PostImage instances if provided.
+        Create a new Post instance along with any associated PostImage instances.
+        The logged-in user is automatically assigned as the post's creator.
         """
         images_data = validated_data.pop('images', [])
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['user'] = request.user
         post = Post.objects.create(**validated_data)
         for image_data in images_data:
             PostImage.objects.create(post=post, **image_data)
