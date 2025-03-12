@@ -58,3 +58,25 @@ class PostLikeSerializer(serializers.ModelSerializer):
         if request and hasattr(request, 'user'):
             validated_data['user'] = request.user
         return super().create(validated_data)
+
+class PostCommentSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the PostComment model.
+
+    - Represents detailed user information via a nested UserSerializer.
+    - Accepts a post primary key for input.
+    - Automatically assigns the logged-in user on creation.
+    """
+    user = UserSerializer(read_only=True)
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
+
+    class Meta:
+        model = PostComment
+        fields = ('id', 'user', 'post', 'comment', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'user', 'created_at', 'updated_at')
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['user'] = request.user
+        return super().create(validated_data)
