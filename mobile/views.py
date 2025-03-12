@@ -175,3 +175,26 @@ class UpdatePost(APIView):
             "detail": "Post update failed.",
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+class DeletePost(APIView):
+    """
+    Delete an existing post. Only the creator (logged-in user) of the post can delete it.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk, *args, **kwargs):
+        post = get_object_or_404(Post, pk=pk)
+        if post.user != request.user:
+            return Response({
+                "detail": "Permission denied: You are not the owner of this post."
+            }, status=status.HTTP_403_FORBIDDEN)
+        try:
+            post.delete()
+            return Response({
+                "detail": "Post deleted successfully."
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "detail": "An error occurred while deleting the post.",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
