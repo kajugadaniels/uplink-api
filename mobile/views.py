@@ -109,10 +109,13 @@ class PostDetails(APIView):
     Retrieve detailed information for a specific post.
     This endpoint is publicly accessible.
     """
+    permission_classes = [AllowAny]
+
     def get(self, request, pk, *args, **kwargs):
         try:
             post = get_object_or_404(Post, pk=pk)
-            serializer = PostSerializer(post)
+            # Pass the request context to build absolute URLs in nested serializers
+            serializer = PostSerializer(post, context={'request': request})
             return Response({
                 "detail": "Post details retrieved successfully.",
                 "data": serializer.data
