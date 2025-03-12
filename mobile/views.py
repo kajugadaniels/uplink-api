@@ -349,3 +349,24 @@ class UpdatePostComment(APIView):
             "detail": "Comment update failed.",
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+class DeletePostComment(APIView):
+    """
+    Delete an existing comment.
+    Only the comment's owner (logged-in user) can delete it.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk, *args, **kwargs):
+        comment = get_object_or_404(PostComment, pk=pk)
+        if comment.user != request.user:
+            return Response({"detail": "Permission denied: You are not the owner of this comment."},
+                            status=status.HTTP_403_FORBIDDEN)
+        try:
+            comment.delete()
+            return Response({"detail": "Comment deleted successfully."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "detail": "An error occurred while deleting the comment.",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
