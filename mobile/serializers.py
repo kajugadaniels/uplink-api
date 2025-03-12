@@ -1,5 +1,6 @@
 from mobile.models import *
 from account.models import *
+from base.serializers import *
 from rest_framework import serializers
 
 class UserSerializer(serializers.ModelSerializer):
@@ -28,6 +29,7 @@ class PostSerializer(serializers.ModelSerializer):
     The user field is represented using the detailed UserSerializer.
     """
     user = UserSerializer(read_only=True)
+    category = CategorySerializer(read_only=True)
     images = PostImageSerializer(many=True, required=False)
 
     class Meta:
