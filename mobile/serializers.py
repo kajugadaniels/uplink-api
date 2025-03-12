@@ -1,6 +1,7 @@
 from mobile.models import *
 from account.models import *
 from base.serializers import *
+from base.models import *
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
@@ -88,9 +89,9 @@ class PostSerializer(serializers.ModelSerializer):
     Accepts 'category_id' as a write-only field for input and outputs detailed category data via 'category'.
     """
     user = UserSerializer(read_only=True)
-    # Write-only field for input
+    # Write-only field for input: now directly uses Category model to avoid circular dependency
     category_id = serializers.PrimaryKeyRelatedField(
-        queryset=CategorySerializer.Meta.model.objects.all() if hasattr(CategorySerializer.Meta, 'model') else None,
+        queryset=Category.objects.all(),
         source='category',
         write_only=True
     )
