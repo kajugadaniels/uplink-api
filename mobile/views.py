@@ -237,3 +237,32 @@ class GetUserPosts(APIView):
                 "detail": "An error occurred while retrieving posts for the specified user.",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class TogglePostLike(APIView):
+    """
+    Toggle the like status for a post.
+    
+    If the logged-in user has already liked the post, the like is removed.
+    If not, a new like is created.
+    This endpoint ensures that a user can only like a post once and toggles the like state.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id, *args, **kwargs):
+        user = request.user
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        existing_like = PostLike.objects.filter(user=user, post=post).first()
+        if existing_like:
+            existing_like.delete()
+            return Response({"detail": "Like removed."}, status=status.HTTP_200_OK)
+        else:
+            like = PostLike.objects.create(user=user, post=post)
+            serializer = PostLikeSerializer(like, context={'request': request})
+            return Response({
+                "detail": "Post liked successfully.",
+                "data": serializer.data
+            }, status=status.HTTP_201_CREATED)
