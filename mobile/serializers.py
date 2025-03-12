@@ -134,3 +134,17 @@ class PostSerializer(serializers.ModelSerializer):
             for image_data in images_data:
                 PostImage.objects.create(post=instance, **image_data)
         return instance
+
+class CategorySerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Category model.
+    
+    Serializes the 'name' field provided by the user and the auto-generated 'slug' field.
+    Also includes a nested list of posts (using PostSerializer) associated with the category.
+    """
+    posts = PostSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Category
+        fields = ['name', 'slug', 'posts']
+        read_only_fields = ['slug']
