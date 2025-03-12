@@ -56,7 +56,7 @@ class CategoryDetails(APIView):
 
 class GetPosts(APIView):
     """
-    Retrieve a list of all posts with detailed information.
+    Retrieve a list of all posts with detailed information including likes and comments.
     This endpoint is publicly accessible.
     """
     permission_classes = [AllowAny]
@@ -64,7 +64,7 @@ class GetPosts(APIView):
     def get(self, request, *args, **kwargs):
         try:
             posts = Post.objects.all().order_by('-created_at')
-            # Pass the request in the context to build absolute URLs
+            # Pass the request context to build absolute URLs
             serializer = PostSerializer(posts, many=True, context={'request': request})
             return Response({
                 "detail": "Posts retrieved successfully.",
