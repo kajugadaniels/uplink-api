@@ -69,3 +69,28 @@ class PostImage(models.Model):
             if os.path.isfile(self.image.path):
                 os.remove(self.image.path)
         super(PostImage, self).delete(*args, **kwargs)
+
+class PostLike(models.Model):
+    """
+    Model representing a 'like' on a post.
+
+    Attributes:
+        user (User): The user who liked the post.
+        post (Post): The post that was liked.
+        created_at (datetime): The timestamp when the like was created.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="post_likes", help_text="The user who liked the post.")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes", help_text="The post that is liked.")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="The date and time when the like was created.")
+
+    class Meta:
+        unique_together = ('user', 'post')
+        ordering = ['-created_at']
+        verbose_name = "Post Like"
+        verbose_name_plural = "Post Likes"
+
+    def __str__(self):
+        """
+        Returns a string representation of the PostLike instance.
+        """
+        return f"{self.user} liked '{self.post.title}'"
