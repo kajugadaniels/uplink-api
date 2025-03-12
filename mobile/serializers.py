@@ -36,7 +36,7 @@ class PostImageSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     """
-    Serializer for the Post model including nested user and images.
+    Serializer for the Post model including nested user, category, and images.
     The user field is represented using the detailed UserSerializer.
     """
     user = UserSerializer(read_only=True)
