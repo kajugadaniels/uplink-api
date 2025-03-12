@@ -210,7 +210,7 @@ class GetUserPosts(APIView):
     
     This endpoint is publicly accessible and returns:
       - A top-level 'user' object containing detailed user info.
-      - A 'posts' array containing detailed post information without the nested user data.
+      - A 'posts' array containing detailed post information (including likes and comments) without the nested user data.
     """
     permission_classes = [AllowAny]
 
