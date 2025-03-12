@@ -50,3 +50,22 @@ class CategoryDetails(APIView):
                 "detail": "An error occurred while retrieving the category details.",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GetPosts(APIView):
+    """
+    Retrieve a list of all posts with detailed information.
+    This endpoint is publicly accessible.
+    """
+    def get(self, request, *args, **kwargs):
+        try:
+            posts = Post.objects.all().order_by('-created_at')
+            serializer = PostSerializer(posts, many=True)
+            return Response({
+                "detail": "Posts retrieved successfully.",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "detail": "An error occurred while retrieving posts.",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
