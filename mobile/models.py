@@ -94,3 +94,23 @@ class PostLike(models.Model):
         Returns a string representation of the PostLike instance.
         """
         return f"{self.user} liked '{self.post.title}'"
+
+class PostComment(models.Model):
+    """
+    Model representing a comment on a post.
+
+    Attributes:
+        post (Post): The post to which the comment is associated.
+        user (User): The user who made the comment.
+        comment (str): The content of the comment.
+        created_at (datetime): Timestamp when the comment was created.
+        updated_at (datetime): Timestamp when the comment was last updated.
+    """
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', help_text="The post that this comment is associated with.")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='comments', help_text="The user who made the comment.")
+    comment = models.TextField(help_text="The content of the comment.")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="The time when the comment was created.")
+    updated_at = models.DateTimeField(auto_now=True, help_text="The time when the comment was last updated.")
+
+    def __str__(self):
+        return f"Comment by {self.user} on {self.post.title}"
