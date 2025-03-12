@@ -208,14 +208,14 @@ class DeletePost(APIView):
 class GetUserPosts(APIView):
     """
     Retrieve a list of posts created by a specific user.
-    
-    This endpoint is publicly accessible and returns detailed post information
-    for the given user (by user ID).
+    This endpoint is publicly accessible and returns detailed post information for the given user (by user ID).
     """
+    permission_classes = [AllowAny]
+
     def get(self, request, user_id, *args, **kwargs):
         try:
-            # Retrieve posts for the specified user
             posts = Post.objects.filter(user_id=user_id).order_by('-created_at')
+            # Pass the request context for proper URL building in nested serializers
             serializer = PostSerializer(posts, many=True, context={'request': request})
             return Response({
                 "detail": "Posts for the user retrieved successfully.",
