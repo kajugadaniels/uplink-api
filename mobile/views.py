@@ -59,10 +59,13 @@ class GetPosts(APIView):
     Retrieve a list of all posts with detailed information.
     This endpoint is publicly accessible.
     """
+    permission_classes = [AllowAny]
+
     def get(self, request, *args, **kwargs):
         try:
             posts = Post.objects.all().order_by('-created_at')
-            serializer = PostSerializer(posts, many=True)
+            # Pass the request in the context to build absolute URLs
+            serializer = PostSerializer(posts, many=True, context={'request': request})
             return Response({
                 "detail": "Posts retrieved successfully.",
                 "data": serializer.data
