@@ -119,3 +119,59 @@ class PostDetails(APIView):
                 "detail": "An error occurred while retrieving post details.",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class UpdatePost(APIView):
+    """
+    Update an existing post. Only the creator (logged-in user) of the post can update it.
+    The updated_at field is automatically updated on save.
+    Supports both full (PUT) and partial (PATCH) updates.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, pk, *args, **kwargs):
+        post = get_object_or_404(Post, pk=pk)
+        if post.user != request.user:
+            return Response({
+                "detail": "Permission denied: You are not the owner of this post."
+            }, status=status.HTTP_403_FORBIDDEN)
+        serializer = PostSerializer(post, data=request.data, partial=False)
+        if serializer.is_valid():
+            try:
+                updated_post = serializer.save()  # updated_at is auto-triggered here.
+                return Response({
+                    "detail": "Post updated successfully.",
+                    "data": PostSerializer(updated_post).data
+                }, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({
+                    "detail": "An error occurred while updating the post.",
+                    "error": str(e)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            "detail": "Post update failed.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk, *args, **kwargs):
+        post = get_object_or_404(Post, pk=pk)
+        if post.user != request.user:
+            return Response({
+                "detail": "Permission denied: You are not the owner of this post."
+            }, status=status.HTTP_403_FORBIDDEN)
+        serializer = PostSerializer(post, data=request.data, partial=True)
+        if serializer.is_valid():
+            try:
+                updated_post = serializer.save()  # updated_at is auto-triggered here.
+                return Response({
+                    "detail": "Post updated successfully.",
+                    "data": PostSerializer(updated_post).data
+                }, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({
+                    "detail": "An error occurred while updating the post.",
+                    "error": str(e)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            "detail": "Post update failed.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
