@@ -15,5 +15,10 @@ urlpatterns = [
     path('post/<int:pk>/update/', UpdatePost.as_view(), name='UpdatePost'),
     path('post/<int:pk>/delete/', DeletePost.as_view(), name='DeletePost'),
     path('posts/user/<int:user_id>/', GetUserPosts.as_view(), name='GetUserPosts'),
+
     path('post/<int:post_id>/like/', TogglePostLike.as_view(), name='TogglePostLike'),
+
+    path('post/<int:post_id>/comment/add/', AddPostComment.as_view(), name='AddPostComment'),
+    path('post/comment/<int:pk>/update/', UpdatePostComment.as_view(), name='UpdatePostComment'),
+    path('post/comment/<int:pk>/delete/', DeletePostComment.as_view(), name='DeletePostComment'),
 ]  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
