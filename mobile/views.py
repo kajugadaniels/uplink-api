@@ -105,7 +105,7 @@ class AddPost(APIView):
 
 class PostDetails(APIView):
     """
-    Retrieve detailed information for a specific post.
+    Retrieve detailed information for a specific post, including likes and comments.
     This endpoint is publicly accessible.
     """
     permission_classes = [AllowAny]
