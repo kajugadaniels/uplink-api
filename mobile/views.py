@@ -3,7 +3,7 @@ from base.serializers import *
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 class GetCategories(APIView):
     """
@@ -69,3 +69,31 @@ class GetPosts(APIView):
                 "detail": "An error occurred while retrieving posts.",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class AddPost(APIView):
+    """
+    Create a new post. Only authenticated users can create a post.
+    The logged-in user is automatically assigned as the creator of the post.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        data = request.data.copy()
+        data['user'] = request.user.id  # Ensure the post's user is the logged-in user.
+        serializer = PostSerializer(data=data)
+        if serializer.is_valid():
+            try:
+                post = serializer.save()
+                return Response({
+                    "detail": "Post created successfully.",
+                    "data": PostSerializer(post).data
+                }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({
+                    "detail": "An error occurred while creating the post.",
+                    "error": str(e)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            "detail": "Post creation failed.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
