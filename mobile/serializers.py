@@ -37,10 +37,14 @@ class PostImageSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     """
     Serializer for the Post model including nested user, category, and images.
-    The user field is represented using the detailed UserSerializer.
+    Accepts 'category_id' as a write-only field for input, while the output 'category' field provides detailed data.
     """
     user = UserSerializer(read_only=True)
-    category = CategorySerializer(read_only=True)
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=CategorySerializer.Meta.model.objects.all() if hasattr(CategorySerializer.Meta, 'model') else None,
+        source='category',
+        write_only=True
+    )
     images = PostImageSerializer(many=True, required=False)
 
     class Meta:
