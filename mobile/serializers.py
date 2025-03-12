@@ -19,8 +19,8 @@ class CategorySerializer(serializers.ModelSerializer):
     """
     Serializer for the Category model.
     
-    Serializes the 'name' field provided by the user and the auto-generated 'slug' field,
-    and includes a nested list of posts associated with the category.
+    Serializes the 'name' field provided by the user and the auto-generated 'slug' field.
+    Also includes a nested list of posts (using PostSerializer) associated with the category.
     """
     posts = PostSerializer(many=True, read_only=True)
 
