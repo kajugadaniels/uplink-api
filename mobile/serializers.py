@@ -40,19 +40,23 @@ class PostImageSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     """
     Serializer for the Post model including nested user, category, and images.
-    Accepts 'category_id' as a write-only field for input, while the output 'category' field provides detailed data.
+    
+    Accepts 'category_id' as a write-only field for input and outputs detailed category data via 'category'.
     """
     user = UserSerializer(read_only=True)
-    category = serializers.PrimaryKeyRelatedField(
+    # Write-only field for input
+    category_id = serializers.PrimaryKeyRelatedField(
         queryset=CategorySerializer.Meta.model.objects.all() if hasattr(CategorySerializer.Meta, 'model') else None,
         source='category',
         write_only=True
     )
+    # Read-only nested representation for output
+    category = CategorySerializer(read_only=True)
     images = PostImageSerializer(many=True, required=False)
 
     class Meta:
         model = Post
-        fields = ('id', 'user', 'title', 'category', 'description', 'created_at', 'updated_at', 'images')
+        fields = ('id', 'user', 'title', 'category_id', 'category', 'description', 'created_at', 'updated_at', 'images')
         read_only_fields = ('id', 'created_at', 'updated_at')
 
     def create(self, validated_data):
