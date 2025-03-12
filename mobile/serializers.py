@@ -87,3 +87,28 @@ class PostSerializer(serializers.ModelSerializer):
             for image_data in images_data:
                 PostImage.objects.create(post=instance, **image_data)
         return instance
+
+class PostLikeSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the PostLike model.
+    
+    - The 'user' field is represented using the detailed UserSerializer and is read-only.
+    - The 'post' field accepts a primary key.
+    - During creation, the logged-in user is automatically assigned.
+    """
+    user = UserSerializer(read_only=True)
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
+
+    class Meta:
+        model = PostLike
+        fields = ('id', 'user', 'post', 'created_at')
+        read_only_fields = ('id', 'created_at', 'user')
+
+    def create(self, validated_data):
+        """
+        Override create to automatically assign the logged-in user as the liker.
+        """
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['user'] = request.user
+        return super().create(validated_data)
