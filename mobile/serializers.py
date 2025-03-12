@@ -81,6 +81,15 @@ class PostCommentSerializer(serializers.ModelSerializer):
             validated_data['user'] = request.user
         return super().create(validated_data)
 
+class CategoryNestedSerializer(serializers.ModelSerializer):
+    """
+    A lightweight serializer for Category used inside PostSerializer.
+    Exposes only basic fields: name and slug.
+    """
+    class Meta:
+        model = Category
+        fields = ('name', 'slug')
+
 class PostSerializer(serializers.ModelSerializer):
     """
     Serializer for the Post model including nested user, category, images, likes, and comments.
