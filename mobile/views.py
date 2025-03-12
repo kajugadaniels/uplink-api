@@ -1,8 +1,11 @@
 from base.models import *
+from mobile.models import *
 from base.serializers import *
+from mobile.serializers import *
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 class GetCategories(APIView):
@@ -97,3 +100,22 @@ class AddPost(APIView):
             "detail": "Post creation failed.",
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+class PostDetails(APIView):
+    """
+    Retrieve detailed information for a specific post.
+    This endpoint is publicly accessible.
+    """
+    def get(self, request, pk, *args, **kwargs):
+        try:
+            post = get_object_or_404(Post, pk=pk)
+            serializer = PostSerializer(post)
+            return Response({
+                "detail": "Post details retrieved successfully.",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "detail": "An error occurred while retrieving post details.",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
