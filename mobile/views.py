@@ -266,3 +266,32 @@ class TogglePostLike(APIView):
                 "detail": "Post liked successfully.",
                 "data": serializer.data
             }, status=status.HTTP_201_CREATED)
+
+class AddPostComment(APIView):
+    """
+    Create a new comment for a specific post.
+    Only authenticated users can add comments.
+    The post ID is taken from the URL.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id, *args, **kwargs):
+        data = request.data.copy()
+        data['post'] = post_id  # Ensure the comment is linked to the correct post
+        serializer = PostCommentSerializer(data=data, context={'request': request})
+        if serializer.is_valid():
+            try:
+                comment = serializer.save()
+                return Response({
+                    "detail": "Comment added successfully.",
+                    "data": PostCommentSerializer(comment, context={'request': request}).data
+                }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({
+                    "detail": "An error occurred while adding the comment.",
+                    "error": str(e)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            "detail": "Comment creation failed.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
