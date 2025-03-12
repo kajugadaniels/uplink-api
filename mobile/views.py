@@ -198,3 +198,25 @@ class DeletePost(APIView):
                 "detail": "An error occurred while deleting the post.",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GetUserPosts(APIView):
+    """
+    Retrieve a list of posts created by a specific user.
+    
+    This endpoint is publicly accessible and returns detailed post information
+    for the given user (by user ID).
+    """
+    def get(self, request, user_id, *args, **kwargs):
+        try:
+            # Retrieve posts for the specified user
+            posts = Post.objects.filter(user_id=user_id).order_by('-created_at')
+            serializer = PostSerializer(posts, many=True, context={'request': request})
+            return Response({
+                "detail": "Posts for the user retrieved successfully.",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "detail": "An error occurred while retrieving posts for the specified user.",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
