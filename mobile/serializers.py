@@ -1,7 +1,6 @@
+from base.models import *
 from mobile.models import *
 from account.models import *
-from base.serializers import *
-from base.models import *
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
@@ -15,6 +14,17 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('name', 'email', 'phone_number', 'username', 'image')
+
+class CategorySerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Category model.
+    Serializes the 'name' field provided by the user and the auto-generated 'slug' field.
+    """
+    class Meta:
+        model = Category
+        fields = ['name', 'slug']
+        read_only_fields = ['slug']
+
 
 class PostImageSerializer(serializers.ModelSerializer):
     """
