@@ -16,8 +16,20 @@ class PostImageSerializer(serializers.ModelSerializer):
     """
     Serializer for the PostImage model.
     
-    Handles serialization for a post image, exposing the image field and its creation timestamp.
+    Handles serialization for a post image. The image field is overridden to return
+    an absolute URL using the request context.
     """
+    image = serializers.SerializerMethodField()
+
+    def get_image(self, obj):
+        """
+        Returns the absolute URL for the image.
+        """
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.image.url)
+        return obj.image.url
+
     class Meta:
         model = PostImage
         fields = ('id', 'image', 'created_at')
