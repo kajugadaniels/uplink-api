@@ -95,9 +95,10 @@ class PostSerializer(serializers.ModelSerializer):
     Serializer for the Post model including nested user, category, images, likes, and comments.
     
     Accepts 'category_id' as a write-only field for input and outputs detailed category data via a nested CategoryNestedSerializer.
+    Also accepts 'upload_images' as a write-only field to handle image file uploads.
     """
     user = UserSerializer(read_only=True)
-    # Write-only field for input
+    # Write-only field for input: for setting category
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(),
         source='category',
@@ -105,41 +106,50 @@ class PostSerializer(serializers.ModelSerializer):
     )
     # Read-only nested representation for output using the lightweight serializer
     category = CategoryNestedSerializer(read_only=True)
-    images = PostImageSerializer(many=True, required=False)
+    images = PostImageSerializer(many=True, read_only=True)
     likes = PostLikeSerializer(many=True, read_only=True)
     comments = PostCommentSerializer(many=True, read_only=True)
+    # New field for handling image uploads
+    upload_images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+        help_text="List of image files to upload for the post."
+    )
 
     class Meta:
         model = Post
         fields = ('id', 'user', 'title', 'category_id', 'category', 'description',
-                  'created_at', 'updated_at', 'images', 'likes', 'comments')
+                  'created_at', 'updated_at', 'images', 'likes', 'comments', 'upload_images')
         read_only_fields = ('id', 'created_at', 'updated_at')
 
     def create(self, validated_data):
         """
         Create a new Post instance along with any associated PostImage instances.
         The logged-in user is automatically assigned as the post's creator.
+        Also processes 'upload_images' to create PostImage records.
         """
-        images_data = validated_data.pop('images', [])
+        upload_images = validated_data.pop('upload_images', [])
         request = self.context.get('request')
         if request and hasattr(request, 'user'):
             validated_data['user'] = request.user
         post = Post.objects.create(**validated_data)
-        for image_data in images_data:
-            PostImage.objects.create(post=post, **image_data)
+        for image in upload_images:
+            PostImage.objects.create(post=post, image=image)
         return post
 
     def update(self, instance, validated_data):
         """
-        Update an existing Post instance. If new post images data is provided,
+        Update an existing Post instance. If new post images are provided via 'upload_images',
         existing images are deleted and new PostImage instances are created.
         """
-        images_data = validated_data.pop('images', None)
+        upload_images = validated_data.pop('upload_images', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-        if images_data is not None:
+        if upload_images is not None:
+            # Optionally delete existing images if you want a full replacement:
             instance.images.all().delete()
-            for image_data in images_data:
-                PostImage.objects.create(post=instance, **image_data)
+            for image in upload_images:
+                PostImage.objects.create(post=instance, image=image)
         return instance
