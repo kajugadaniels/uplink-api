@@ -29,3 +29,9 @@ class UserAdmin(admin.ModelAdmin):
             delete_url
         )
     actions.short_description = "Actions"
+
+    # Ensure 'actions' is an iterable and not just a method
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        # Add any custom actions if needed
+        return actions
