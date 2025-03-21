@@ -1,8 +1,7 @@
-from django.contrib import admin
+from account.models import *
 from django.urls import reverse
+from django.contrib import admin
 from django.utils.html import format_html
-
-from .models import User
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
