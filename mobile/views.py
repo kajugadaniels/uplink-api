@@ -405,10 +405,11 @@ class ToggleFollowView(APIView):
 
 class UserFollowListView(APIView):
     """
-    Retrieve the list of users that the specified user is following.
+    Retrieve the list of users that follow the specified user.
 
-    This endpoint aggregates the 'following' users from the Follow relationships,
-    ensuring that duplicates (if any) are removed, and returns a clean list of user details.
+    This endpoint aggregates the 'follower' users from the Follow relationships
+    where the specified user is being followed, ensuring that any duplicate entries are removed,
+    and returns a clean list of user details.
     """
     permission_classes = [AllowAny]
 
@@ -421,18 +422,17 @@ class UserFollowListView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        # Retrieve follow relationships where target_user is the follower.
-        follow_relationships = Follow.objects.filter(follower=target_user)
-        # Extract the followed users and remove any duplicates.
-        following_users = [relation.following for relation in follow_relationships]
-        unique_following = {user.id: user for user in following_users}.values()
+        # Retrieve follow relationships where the target user is being followed.
+        follow_relationships = Follow.objects.filter(following=target_user)
+        # Extract the follower users and remove duplicates
+        follower_users = [relation.follower for relation in follow_relationships]
+        unique_followers = {user.id: user for user in follower_users}.values()
         
-        # Serialize the list of unique followed users.
-        serializer = UserSerializer(unique_following, many=True, context={'request': request})
+        serializer = UserSerializer(unique_followers, many=True, context={'request': request})
         
         return Response({
-            "detail": "Following list retrieved successfully.",
-            "count": len(unique_following),
+            "detail": "Followers list retrieved successfully.",
+            "count": len(unique_followers),
             "users": serializer.data
         }, status=status.HTTP_200_OK)
 
