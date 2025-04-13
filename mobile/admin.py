@@ -126,3 +126,10 @@ class FollowAdmin(admin.ModelAdmin):
     )
     list_filter = ('created_at',)
     ordering = ('-created_at',)
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ('id', 'sender', 'receiver', 'created_at', 'updated_at', 'is_read')
+    search_fields = ('sender__email', 'receiver__email', 'body')
+    list_filter = ('created_at', 'is_read')
+    ordering = ('-created_at',)
