@@ -405,11 +405,10 @@ class ToggleFollowView(APIView):
 
 class UserFollowListView(APIView):
     """
-    Retrieve the follow relationships for a given user.
-    
-    Returns:
-      - A list of users who follow the specified user.
-      - A list of users that the specified user is following.
+    Retrieve the list of users that a specific user is following.
+
+    This endpoint returns a list of follow relationships for a given user
+    where the user is the follower. Duplicate follow entries (if any) are removed.
     """
     permission_classes = [AllowAny]
 
@@ -417,16 +416,17 @@ class UserFollowListView(APIView):
         try:
             target_user = User.objects.get(id=user_id)
         except User.DoesNotExist:
-            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "User not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
         
-        followers = Follow.objects.filter(following=target_user)
-        following = Follow.objects.filter(follower=target_user)
-        
-        followers_serialized = FollowSerializer(followers, many=True, context={'request': request}).data
+        # Query follow relationships where the target user is the follower.
+        following = Follow.objects.filter(follower=target_user).distinct()
         following_serialized = FollowSerializer(following, many=True, context={'request': request}).data
         
         return Response({
-            "detail": "Follow relationships retrieved successfully.",
-            "followers": followers_serialized,
+            "detail": "Following list retrieved successfully.",
+            "count": following.count(),
             "following": following_serialized
         }, status=status.HTTP_200_OK)
