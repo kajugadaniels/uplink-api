@@ -114,3 +114,47 @@ class PostComment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.user} on {self.post.title}"
+
+class Follow(models.Model):
+    """
+    Represents a following relationship between users.
+
+    Attributes:
+        follower (User): The user who follows another user.
+        following (User): The user being followed.
+        created_at (datetime): The timestamp when the follow relationship was created.
+    """
+    follower = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='following_set',
+        on_delete=models.CASCADE,
+        help_text="User who follows another user."
+    )
+    following = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='followers_set',
+        on_delete=models.CASCADE,
+        help_text="User who is being followed."
+    )
+    created_at = models.DateTimeField(auto_now_add=True, help_text="Timestamp when the follow relationship was created.")
+
+    class Meta:
+        unique_together = ('follower', 'following')
+        ordering = ['-created_at']
+        verbose_name = 'Follow'
+        verbose_name_plural = 'Follows'
+
+    def clean(self):
+        """
+        Prevent users from following themselves.
+        """
+        if self.follower == self.following:
+            from django.core.exceptions import ValidationError
+            raise ValidationError("A user cannot follow themselves.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.follower} follows {self.following}"
