@@ -402,3 +402,31 @@ class ToggleFollowView(APIView):
                 "detail": "User followed successfully.",
                 "data": serializer.data
             }, status=status.HTTP_201_CREATED)
+
+class UserFollowListView(APIView):
+    """
+    Retrieve the follow relationships for a given user.
+    
+    Returns:
+      - A list of users who follow the specified user.
+      - A list of users that the specified user is following.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, user_id, *args, **kwargs):
+        try:
+            target_user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        followers = Follow.objects.filter(following=target_user)
+        following = Follow.objects.filter(follower=target_user)
+        
+        followers_serialized = FollowSerializer(followers, many=True, context={'request': request}).data
+        following_serialized = FollowSerializer(following, many=True, context={'request': request}).data
+        
+        return Response({
+            "detail": "Follow relationships retrieved successfully.",
+            "followers": followers_serialized,
+            "following": following_serialized
+        }, status=status.HTTP_200_OK)
