@@ -552,18 +552,31 @@ class MessageDetailView(APIView):
 
 class UserInboxView(APIView):
     """
-    Retrieve all messages received by a specific user.
-    Only allow the user themselves or staff to view their inbox.
+    Retrieve a unique conversation list for the logged-in user based on messages received.
+
+    For each sender, only the most recent message received is returned to create a conversation summary.
+    This endpoint is accessible by the logged-in user only.
     """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, user_id, *args, **kwargs):
-        if request.user.id != user_id and not request.user.is_staff:
-            return Response({"detail": "You are not permitted to view another user's inbox."}, status=status.HTTP_403_FORBIDDEN)
-        messages = Message.objects.filter(receiver__id=user_id).order_by('-created_at')
-        serializer = MessageSerializer(messages, many=True, context={'request': request})
+    def get(self, request, *args, **kwargs):
+        # Retrieve all messages for the logged-in user ordered by most recent first.
+        all_messages = Message.objects.filter(receiver=request.user).order_by('-created_at')
+        
+        # Create a dictionary to capture the most recent message per unique sender.
+        unique_conversations = {}
+        for message in all_messages:
+            # The first message encountered for a given sender (ordered descending by created_at)
+            # is the most recent.
+            if message.sender_id not in unique_conversations:
+                unique_conversations[message.sender_id] = message
+
+        # Convert the dictionary values into a list.
+        conversation_list = list(unique_conversations.values())
+        serializer = MessageSerializer(conversation_list, many=True, context={'request': request})
+        
         return Response({
-            "detail": "Inbox messages retrieved successfully.",
-            "count": messages.count(),
-            "messages": serializer.data
+            "detail": "Unique conversations retrieved successfully.",
+            "count": len(conversation_list),
+            "conversations": serializer.data
         }, status=status.HTTP_200_OK)
