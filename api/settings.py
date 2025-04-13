@@ -87,35 +87,32 @@ print(str(os.getenv("NODE_ENV")))
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 if str(os.getenv("NODE_ENV"))=="production":
 
-    DATABASES =  {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': os.getenv("POSTGRES_DB"),      
-            'USER': os.getenv("POSTGRES_USER"),       
-            'PASSWORD': os.getenv("POSTGRES_PASSWORD"), 
-            'HOST': os.getenv("PGHOST"),         
-            'PORT':os.getenv("PGPORT")
-            # 'OPTIONS': {
-            #     'sslmode': 'require',
-            # }            
-        }
+    DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv("MYSQL_DB"),
+        'USER': os.getenv("MYSQL_USER"),
+        'PASSWORD': os.getenv("MYSQL_PASSWORD"),
+        'HOST': os.getenv("MYSQL_HOST"),
+        'PORT': os.getenv("MYSQL_PORT"),
     }
+}
 else:
     DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv("MYSQL_DB"),
+        'USER': os.getenv("MYSQL_USER"),
+        'PASSWORD': os.getenv("MYSQL_PASSWORD"),
+        'HOST': os.getenv("MYSQL_HOST"),
+        'PORT': os.getenv("MYSQL_PORT"),
     }
 }
 
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': os.getenv("MYSQL_DB"),
-#         'USER': os.getenv("MYSQL_USER"),
-#         'PASSWORD': os.getenv("MYSQL_PASSWORD"),
-#         'HOST': os.getenv("MYSQL_HOST"),
-#         'PORT': os.getenv("MYSQL_PORT"),
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
 
@@ -229,7 +226,7 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 # DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Your App <no-reply@yourapp.com>')
 
-CONTACT_EMAIL = 'kajugadaniels@gmail.com'
+CONTACT_EMAIL = 'nexcoderwa@gmail.com'
 
 JAZZMIN_SETTINGS = {
     "site_title": "UpLink",
