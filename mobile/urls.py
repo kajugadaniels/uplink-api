@@ -21,4 +21,7 @@ urlpatterns = [
     path('post/<int:post_id>/comment/add/', AddPostComment.as_view(), name='AddPostComment'),
     path('post/comment/<int:pk>/update/', UpdatePostComment.as_view(), name='UpdatePostComment'),
     path('post/comment/<int:pk>/delete/', DeletePostComment.as_view(), name='DeletePostComment'),
+
+    path('user/<int:user_id>/toggle-follow/', ToggleFollowView.as_view(), name='ToggleFollow'),
+    path('user/<int:user_id>/follows/', UserFollowListView.as_view(), name='UserFollowList'),
 ]  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
