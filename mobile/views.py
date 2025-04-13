@@ -430,3 +430,34 @@ class UserFollowListView(APIView):
             "count": following.count(),
             "following": following_serialized
         }, status=status.HTTP_200_OK)
+
+class UserFollowingUsersView(APIView):
+    """
+    Retrieve a list of users that the specified user is following.
+    
+    This endpoint returns user details for each user that the given user has followed.
+    Duplicate entries are removed for safety.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, user_id, *args, **kwargs):
+        try:
+            target_user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Retrieve follow relationships where the target user is the follower.
+        follow_relationships = Follow.objects.filter(follower=target_user)
+        following_users = [relation.following for relation in follow_relationships]
+        # Remove duplicates by using a dict keyed by user ID (just in case)
+        unique_following = {user.id: user for user in following_users}.values()
+        serializer = UserSerializer(unique_following, many=True, context={'request': request})
+        
+        return Response({
+            "detail": "List of followed users retrieved successfully.",
+            "count": len(unique_following),
+            "users": serializer.data
+        }, status=status.HTTP_200_OK)
