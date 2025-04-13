@@ -466,3 +466,23 @@ class UserFollowingUsersView(APIView):
             "count": len(unique_following),
             "users": serializer.data
         }, status=status.HTTP_200_OK)
+
+class MessageSendView(APIView):
+    """
+    Send a new message from the logged-in user to another user.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = MessageCreateSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            message = serializer.save()
+            output_serializer = MessageSerializer(message, context={'request': request})
+            return Response({
+                "detail": "Message sent successfully.",
+                "message": output_serializer.data
+            }, status=status.HTTP_201_CREATED)
+        return Response({
+            "detail": "Error sending message.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
