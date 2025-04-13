@@ -370,3 +370,35 @@ class DeletePostComment(APIView):
                 "detail": "An error occurred while deleting the comment.",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ToggleFollowView(APIView):
+    """
+    Toggle the follow status for a user.
+    
+    - If the logged-in user is already following the target user, then unfollow.
+    - Otherwise, create a new follow relationship.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id, *args, **kwargs):
+        try:
+            target_user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"detail": "Target user not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        if request.user == target_user:
+            return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        follow_relationship = Follow.objects.filter(follower=request.user, following=target_user).first()
+        if follow_relationship:
+            # Unfollow: delete the relationship
+            follow_relationship.delete()
+            return Response({"detail": "Successfully unfollowed the user."}, status=status.HTTP_200_OK)
+        else:
+            # Follow: create a new follow relationship
+            follow_relationship = Follow.objects.create(follower=request.user, following=target_user)
+            serializer = FollowSerializer(follow_relationship, context={'request': request})
+            return Response({
+                "detail": "User followed successfully.",
+                "data": serializer.data
+            }, status=status.HTTP_201_CREATED)
