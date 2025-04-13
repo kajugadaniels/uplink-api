@@ -161,3 +161,23 @@ class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
         fields = ('id', 'follower', 'following', 'created_at')
+
+class MessageCreateSerializer(serializers.ModelSerializer):
+    receiver = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
+    class Meta:
+        model = Message
+        fields = ['id', 'receiver', 'body']
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        validated_data['sender'] = request.user
+        return super().create(validated_data)
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender = UserSerializer(read_only=True)
+    receiver = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Message
+        fields = ['id', 'sender', 'receiver', 'body', 'created_at', 'updated_at', 'is_read', 'read_at']
