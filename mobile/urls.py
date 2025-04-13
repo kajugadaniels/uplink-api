@@ -24,4 +24,5 @@ urlpatterns = [
 
     path('user/<int:user_id>/toggle-follow/', ToggleFollowView.as_view(), name='ToggleFollow'),
     path('user/<int:user_id>/follows/', UserFollowListView.as_view(), name='UserFollowList'),
+    path('user/<int:user_id>/following/', UserFollowingUsersView.as_view(), name='UserFollowingUsers'),
 ]  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
