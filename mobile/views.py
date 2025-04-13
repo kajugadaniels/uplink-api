@@ -486,3 +486,66 @@ class MessageSendView(APIView):
             "detail": "Error sending message.",
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+class MessageDetailView(APIView):
+    """
+    Retrieve, edit, or delete a specific message.
+    Only participants (sender or receiver) can view the message.
+    Only the sender may edit the message.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk, request):
+        try:
+            message = Message.objects.get(pk=pk)
+        except Message.DoesNotExist:
+            raise NotFound("Message not found.")
+        if request.user not in [message.sender, message.receiver]:
+            raise PermissionDenied("You do not have permission to access this message.")
+        return message
+
+    def get(self, request, pk, *args, **kwargs):
+        message = self.get_object(pk, request)
+        serializer = MessageSerializer(message, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk, *args, **kwargs):
+        message = self.get_object(pk, request)
+        if request.user != message.sender:
+            return Response({"detail": "You can only edit messages you have sent."}, status=status.HTTP_403_FORBIDDEN)
+        serializer = MessageCreateSerializer(message, data=request.data, context={'request': request})
+        if serializer.is_valid():
+            updated_message = serializer.save()
+            output_serializer = MessageSerializer(updated_message, context={'request': request})
+            return Response({
+                "detail": "Message updated successfully.",
+                "message": output_serializer.data
+            }, status=status.HTTP_200_OK)
+        return Response({
+            "detail": "Error updating message.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk, *args, **kwargs):
+        message = self.get_object(pk, request)
+        if request.user != message.sender:
+            return Response({"detail": "You can only edit messages you have sent."}, status=status.HTTP_403_FORBIDDEN)
+        serializer = MessageCreateSerializer(message, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            updated_message = serializer.save()
+            output_serializer = MessageSerializer(updated_message, context={'request': request})
+            return Response({
+                "detail": "Message updated successfully.",
+                "message": output_serializer.data
+            }, status=status.HTTP_200_OK)
+        return Response({
+            "detail": "Error updating message.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, *args, **kwargs):
+        message = self.get_object(pk, request)
+        if request.user not in [message.sender, message.receiver]:
+            return Response({"detail": "You are not permitted to delete this message."}, status=status.HTTP_403_FORBIDDEN)
+        message.delete()
+        return Response({"detail": "Message deleted successfully."}, status=status.HTTP_200_OK)
