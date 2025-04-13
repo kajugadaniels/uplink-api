@@ -158,3 +158,42 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.follower} follows {self.following}"
+
+class Message(models.Model):
+    """
+    Represents a message exchanged between two users.
+
+    Attributes:
+        sender (User): The user who sends the message.
+        receiver (User): The user who receives the message.
+        body (TextField): The content of the message.
+        created_at (DateTimeField): The timestamp when the message was created.
+        updated_at (DateTimeField): The timestamp when the message was last updated.
+        is_read (BooleanField): Indicates whether the message has been read.
+        read_at (DateTimeField): The timestamp when the message was marked as read.
+    """
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='sent_messages',
+        on_delete=models.CASCADE,
+        help_text="User who sends the message."
+    )
+    receiver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='received_messages',
+        on_delete=models.CASCADE,
+        help_text="User who receives the message."
+    )
+    body = models.TextField(help_text="The content of the message.")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="Timestamp when the message was created.")
+    updated_at = models.DateTimeField(auto_now=True, help_text="Timestamp when the message was last updated.")
+    is_read = models.BooleanField(default=False, help_text="Indicates whether the message has been read.")
+    read_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp when the message was marked as read.")
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = "Message"
+        verbose_name_plural = "Messages"
+
+    def __str__(self):
+        return f"Message from {self.sender} to {self.receiver} at {self.created_at}"
