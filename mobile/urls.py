@@ -29,4 +29,5 @@ urlpatterns = [
     path('message/send/', MessageSendView.as_view(), name='MessageSend'),
     path('message/<int:pk>/', MessageDetailView.as_view(), name='MessageDetail'),
     path('user/<int:user_id>/inbox/', UserInboxView.as_view(), name='UserInbox'),
+    path('message/history/<int:user_id>/', MessageHistoryView.as_view(), name='MessageHistory'),
 ]  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
