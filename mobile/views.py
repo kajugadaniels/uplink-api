@@ -580,3 +580,35 @@ class UserInboxView(APIView):
             "count": len(conversation_list),
             "conversations": serializer.data
         }, status=status.HTTP_200_OK)
+
+class MessageHistoryView(APIView):
+    """
+    Retrieve the complete message history (conversation) between the logged-in user and a specific target user.
+
+    The endpoint collects all messages sent by either party, ordered by the creation time (oldest to newest),
+    providing a natural conversation flow.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id, *args, **kwargs):
+        # Ensure the target user exists.
+        try:
+            target_user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "Target user not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Retrieve the complete conversation between the logged-in user and the target user.
+        conversation = Message.objects.filter(
+            Q(sender=request.user, receiver=target_user) |
+            Q(sender=target_user, receiver=request.user)
+        ).order_by('created_at')
+
+        serializer = MessageSerializer(conversation, many=True, context={'request': request})
+        return Response({
+            "detail": "Conversation history retrieved successfully.",
+            "count": conversation.count(),
+            "messages": serializer.data
+        }, status=status.HTTP_200_OK)
