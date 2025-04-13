@@ -114,3 +114,15 @@ class PostCommentAdmin(admin.ModelAdmin):
         delete_url = reverse("admin:mobile_postcomment_delete", args=[obj.pk])
         return format_html('<a href="{}" style="color: red;">Delete</a>', delete_url)
     delete_link.short_description = "Delete"
+
+@admin.register(Follow)
+class FollowAdmin(admin.ModelAdmin):
+    list_display = ('id', 'follower', 'following', 'created_at')
+    search_fields = (
+        'follower__email', 
+        'following__email', 
+        'follower__username', 
+        'following__username'
+    )
+    list_filter = ('created_at',)
+    ordering = ('-created_at',)
