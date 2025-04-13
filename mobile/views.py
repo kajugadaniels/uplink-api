@@ -549,3 +549,21 @@ class MessageDetailView(APIView):
             return Response({"detail": "You are not permitted to delete this message."}, status=status.HTTP_403_FORBIDDEN)
         message.delete()
         return Response({"detail": "Message deleted successfully."}, status=status.HTTP_200_OK)
+
+class UserInboxView(APIView):
+    """
+    Retrieve all messages received by a specific user.
+    Only allow the user themselves or staff to view their inbox.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id, *args, **kwargs):
+        if request.user.id != user_id and not request.user.is_staff:
+            return Response({"detail": "You are not permitted to view another user's inbox."}, status=status.HTTP_403_FORBIDDEN)
+        messages = Message.objects.filter(receiver__id=user_id).order_by('-created_at')
+        serializer = MessageSerializer(messages, many=True, context={'request': request})
+        return Response({
+            "detail": "Inbox messages retrieved successfully.",
+            "count": messages.count(),
+            "messages": serializer.data
+        }, status=status.HTTP_200_OK)
