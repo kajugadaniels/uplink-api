@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = User
-        fields = ('name', 'email', 'phone_number', 'username', 'image')
+        fields = ('id', 'name', 'email', 'phone_number', 'username', 'image')
 
 class PostImageSerializer(serializers.ModelSerializer):
     """
@@ -88,7 +88,7 @@ class CategoryNestedSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        fields = ('id', 'name', 'slug')
 
 class PostSerializer(serializers.ModelSerializer):
     """
